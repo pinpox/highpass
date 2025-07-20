@@ -1,0 +1,16 @@
+# HighPass Music Player Configuration
+# This file configures the connection to your Subsonic-compatible music server
+#
+# Place this file in one of the following locations (checked in order):
+# 1. ./highpass.toml (current directory)
+# 2. ~/.config/highpass/highpass.toml (user config directory)
+
+[subsonic]
+# Subsonic server URL (include http:// or https://)
+server = "http://demo.subsonic.org"
+
+# Username for your Subsonic server
+username = "guest"
+
+# Password for your Subsonic server
+password = "guest"

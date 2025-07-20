@@ -47,7 +47,7 @@
             src = ./.;
 
             useFetchCargoVendor = true;
-            cargoHash = "sha256-R+JdF5mLdcepdUCfVwNCrLoW2nJ0vk0XEQWMLjQGnbg=";
+            cargoHash = "sha256-WlUZ93LBvAekhEOiNNtNhd6RJ0uZr+xm3nqQHnivI9A=";
 
             libPath = pkgs.lib.makeLibraryPath [
               # pkgs.wayland

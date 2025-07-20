@@ -1,2 +1,7 @@
+**/*.rs.bk
+*.pdb
 /target
+debug/
+highpass.log
 result
+target/

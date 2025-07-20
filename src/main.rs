@@ -1,3 +1,4 @@
+mod config;
 mod subsonic;
 mod ui;
 
@@ -17,6 +18,7 @@ use ui::{
 use tokio::sync::mpsc;
 use log::{info, warn, error, debug};
 use ui::player::SimpleMpv;
+use config::Config;
 
 #[derive(Debug, Clone)]
 pub enum Message {
@@ -51,14 +53,17 @@ impl App {
             message_sender,
         };
 
-        // Initialize with demo data for development
-        info!("Connecting to Subsonic demo server");
-        let demo_client = SubsonicClient::new(
-            "http://demo.subsonic.org".to_string(),
-            "guest".to_string(),
-            "guest".to_string(),
+        // Load configuration and initialize Subsonic client
+        // We already validated the config exists in main(), so this should not fail
+        let config = Config::load().expect("Configuration should be available");
+        
+        info!("Connecting to Subsonic server: {}", config.subsonic.server);
+        let client = SubsonicClient::new(
+            config.subsonic.server,
+            config.subsonic.username,
+            config.subsonic.password,
         );
-        app.subsonic_client = Some(demo_client);
+        app.subsonic_client = Some(client);
 
         // Load artists asynchronously
         info!("Loading artists from Subsonic server");
@@ -374,14 +379,34 @@ async fn main() -> Result<(), Box<dyn Error>> {
     }
     
     let force_run = args.len() > 1 && args[1] == "--force-run";
+    let debug_mode = args.iter().any(|arg| arg == "--debug");
 
-    // Initialize logger
-    env_logger::Builder::from_default_env()
-        .filter_level(log::LevelFilter::Info)
-        .target(env_logger::Target::Stderr)
-        .init();
+    // Initialize logger based on debug flag
+    if debug_mode {
+        // Log to file when --debug flag is present
+        env_logger::Builder::from_default_env()
+            .filter_level(log::LevelFilter::Debug)
+            .target(env_logger::Target::Pipe(Box::new(std::fs::OpenOptions::new()
+                .create(true)
+                .append(true)
+                .open("./highpass.log")?)))
+            .init();
+    } else {
+        // Disable logging when --debug flag is not present
+        env_logger::Builder::new()
+            .filter_level(log::LevelFilter::Off)
+            .init();
+    }
     
     info!("Starting HighPass music player");
+    
+    // Check configuration early to fail fast before initializing anything
+    if let Err(e) = Config::load() {
+        // Always show configuration errors, regardless of logging settings
+        eprintln!("Configuration error: {}", e);
+        error!("Configuration error: {}", e);
+        return Err(e);
+    }
 
     // Create app first to test MPV initialization
     info!("Creating application instance");
