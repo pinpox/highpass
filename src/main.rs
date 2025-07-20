@@ -16,6 +16,7 @@ use ui::{
 };
 use tokio::sync::mpsc;
 use log::{info, warn, error, debug};
+use ui::player::SimpleMpv;
 
 #[derive(Debug, Clone)]
 pub enum Message {
@@ -290,8 +291,90 @@ impl App {
     }
 }
 
+fn print_version_info() {
+    println!("HighPass Music Player - Version Information");
+    println!("==========================================");
+    
+    // Print application version
+    println!("Application version: {}", env!("CARGO_PKG_VERSION"));
+    
+    // Print libmpv crate version (from Cargo.toml)
+    println!("libmpv crate version: 2.0 (from Cargo.toml)");
+    
+    // Check system MPV
+    match std::process::Command::new("mpv").arg("--version").output() {
+        Ok(output) => {
+            let version_output = String::from_utf8_lossy(&output.stdout);
+            if let Some(first_line) = version_output.lines().next() {
+                println!("System MPV: {}", first_line);
+            }
+        }
+        Err(e) => {
+            println!("System MPV: Not found or error - {}", e);
+        }
+    }
+    
+    // Try to initialize MPV and get runtime version
+    println!("\nTesting MPV initialization:");
+    match SimpleMpv::new() {
+        Ok(mpv) => {
+            println!("✓ MPV initialization: SUCCESS");
+            
+            // Try to get MPV version through API
+            match mpv.get_property::<String>("mpv-version") {
+                Ok(version) => println!("✓ Runtime MPV version: {}", version),
+                Err(e) => println!("✗ Could not get runtime version: {}", e),
+            }
+            
+            // Try to get library version
+            match mpv.get_property::<String>("libmpv-version") {
+                Ok(version) => println!("✓ Runtime libmpv version: {}", version),
+                Err(e) => println!("✗ Could not get libmpv version: {}", e),
+            }
+            
+            // Test basic functionality
+            match mpv.set_property("vid", "no") {
+                Ok(_) => println!("✓ Basic MPV property setting: SUCCESS"),
+                Err(e) => println!("✗ Basic MPV property setting failed: {}", e),
+            }
+            
+            // Test audio client name setting
+            match mpv.set_property("audio-client-name", "HighPass") {
+                Ok(_) => println!("✓ Audio client configuration: SUCCESS"),
+                Err(e) => println!("✗ Audio client configuration failed: {}", e),
+            }
+            
+            println!("✓ MPV is ready for audio playback!");
+        }
+        Err(e) => {
+            println!("✗ MPV initialization: FAILED - {}", e);
+        }
+    }
+    
+    // Environment information
+    println!("\nEnvironment Information:");
+    if let Ok(ld_library_path) = std::env::var("LD_LIBRARY_PATH") {
+        println!("LD_LIBRARY_PATH: {}", ld_library_path);
+    }
+    if let Ok(pkg_config_path) = std::env::var("PKG_CONFIG_PATH") {
+        println!("PKG_CONFIG_PATH: {}", pkg_config_path);
+    }
+    if let Ok(rustflags) = std::env::var("RUSTFLAGS") {
+        println!("RUSTFLAGS: {}", rustflags);
+    }
+}
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
+    // Check for command line arguments
+    let args: Vec<String> = std::env::args().collect();
+    if args.len() > 1 && args[1] == "--info" {
+        print_version_info();
+        return Ok(());
+    }
+    
+    let force_run = args.len() > 1 && args[1] == "--force-run";
+
     // Initialize logger
     env_logger::Builder::from_default_env()
         .filter_level(log::LevelFilter::Info)
@@ -309,10 +392,11 @@ async fn main() -> Result<(), Box<dyn Error>> {
     info!("Application created successfully");
 
     // Check if we're in a proper terminal environment
-    if !IsTty::is_tty(&io::stdout()) {
+    if !force_run && !IsTty::is_tty(&io::stdout()) {
         error!("Not running in a TTY environment.");
         error!("This TUI application requires a proper terminal.");
         error!("Please run this application in a regular terminal session.");
+        error!("Use --force-run to bypass this check for testing purposes.");
         return Err("Not a TTY".into());
     }
 
