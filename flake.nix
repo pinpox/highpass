@@ -50,34 +50,29 @@
             cargoHash = "sha256-WlUZ93LBvAekhEOiNNtNhd6RJ0uZr+xm3nqQHnivI9A=";
 
             libPath = pkgs.lib.makeLibraryPath [
-              # pkgs.wayland
-              # pkgs.libxkbcommon
-              # pkgs.mpv
               pkgs.mpv-unwrapped
             ];
 
             buildInputs = [
-              # pkgs.mpv
               pkgs.mpv-unwrapped
-              # pkgs.fontconfig
-              # pkgs.libxkbcommon
             ];
+
             nativeBuildInputs = [
               pkgs.makeWrapper
-              # pkgs.mpv
               pkgs.mpv-unwrapped
-              # pkgs.pkg-config
             ];
 
             postInstall = ''
-              wrapProgram "$out/bin/highpass" --prefix LD_LIBRARY_PATH : "${pkgs.lib.makeLibraryPath [
-                pkgs.mpv-unwrapped
-                pkgs.mpv-unwrapped.dev
-              ]}"
+              wrapProgram "$out/bin/highpass" --prefix LD_LIBRARY_PATH : "${
+                pkgs.lib.makeLibraryPath [
+                  pkgs.mpv-unwrapped
+                  pkgs.mpv-unwrapped.dev
+                ]
+              }"
             '';
 
             meta = with pkgs.lib; {
-              description = "Subsnoic TUI music player";
+              description = "Subsnoic TUI Music Player";
               mainProgram = "highpass";
               homepage = "https://github.com/pinpox/highpass";
               license = licenses.gpl3Plus;
@@ -106,33 +101,33 @@
               mpv-unwrapped
               mpv-unwrapped.dev
             ];
-            
+
             nativeBuildInputs = with pkgs; [
               pkg-config
             ];
-            
+
             shellHook = ''
               export PKG_CONFIG_PATH="${pkgs.mpv-unwrapped.dev}/lib/pkgconfig:$PKG_CONFIG_PATH"
               export LD_LIBRARY_PATH="${pkgs.mpv-unwrapped}/lib:$LD_LIBRARY_PATH"
               export LIBRARY_PATH="${pkgs.mpv-unwrapped}/lib:$LIBRARY_PATH"
-              
+
               # More explicit linker flags for Rust
               export RUSTFLAGS="-L native=${pkgs.mpv-unwrapped}/lib -l mpv $RUSTFLAGS"
               export LIBMPV_LIB_DIR="${pkgs.mpv-unwrapped}/lib"
               export LIBMPV_INCLUDE_DIR="${pkgs.mpv-unwrapped.dev}/include"
-              
+
               # Force libmpv-sys to use our specific version and rebuild
               export LIBMPV_LINK_LIB="${pkgs.mpv-unwrapped}/lib/libmpv.so"
               export MPV_PKG_CONFIG_PATH="${pkgs.mpv-unwrapped.dev}/lib/pkgconfig"
-              
+
               # Force libmpv-sys to link dynamically against system library
               export LIBMPV_DYNAMIC_LINKING=1
               export LIBMPV_NO_PKG_CONFIG=""
               export LIBMPV_VERSION_CHECK=0
-              
+
               # Additional MPV environment variables
               export MPV_HOME="${pkgs.mpv-unwrapped}"
-              
+
               echo "MPV environment:"
               echo "  MPV version: $(${pkgs.mpv-unwrapped}/bin/mpv --version | head -1)"
               echo "  Library path: ${pkgs.mpv-unwrapped}/lib"

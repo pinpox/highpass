@@ -111,17 +111,4 @@ impl Config {
         Ok(config)
     }
     
-    /// Save the current configuration to a file (useful for creating example configs)
-    pub fn save_to_file(&self, path: &PathBuf) -> Result<(), Box<dyn std::error::Error>> {
-        let content = toml::to_string_pretty(self)?;
-        
-        // Create parent directories if they don't exist
-        if let Some(parent) = path.parent() {
-            fs::create_dir_all(parent)?;
-        }
-        
-        fs::write(path, content)?;
-        info!("Configuration saved to: {}", path.display());
-        Ok(())
-    }
 }

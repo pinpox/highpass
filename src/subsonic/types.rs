@@ -66,6 +66,7 @@ pub struct ArtistsIndex {
 
 #[derive(Debug, Deserialize)]
 pub struct ArtistIndex {
+    #[allow(dead_code)]
     pub name: String,
     pub artist: Vec<Artist>,
 }
@@ -77,16 +78,24 @@ pub struct AlbumResponse {
 
 #[derive(Debug, Deserialize)]
 pub struct AlbumDetail {
+    #[allow(dead_code)]
     pub id: String,
+    #[allow(dead_code)]
     pub name: String,
+    #[allow(dead_code)]
     pub artist: Option<String>,
     #[serde(rename = "artistId")]
+    #[allow(dead_code)]
     pub artist_id: Option<String>,
     #[serde(rename = "coverArt")]
+    #[allow(dead_code)]
     pub cover_art: Option<String>,
     #[serde(rename = "songCount")]
+    #[allow(dead_code)]
     pub song_count: Option<u32>,
+    #[allow(dead_code)]
     pub duration: Option<u32>,
+    #[allow(dead_code)]
     pub year: Option<u32>,
     pub song: Vec<Song>,
 }
@@ -98,7 +107,9 @@ pub struct LyricsResponse {
 
 #[derive(Debug, Deserialize)]
 pub struct Lyrics {
+    #[allow(dead_code)]
     pub artist: Option<String>,
+    #[allow(dead_code)]
     pub title: Option<String>,
     #[serde(rename = "$text")]
     pub text: Option<String>,

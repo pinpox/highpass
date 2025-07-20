@@ -5,14 +5,6 @@ use ratatui::{
 };
 use std::collections::HashMap;
 
-#[derive(Debug, Clone)]
-pub enum TreeMessage {
-    ToggleArtist(String),
-    ToggleAlbum(String),
-    SelectSong(Song),
-    LoadArtistAlbums(String),
-    LoadAlbumSongs(String),
-}
 
 #[derive(Debug, Clone)]
 pub struct TreeState {
@@ -28,9 +20,11 @@ pub struct TreeState {
 
 #[derive(Debug, Clone)]
 pub struct TreeItem {
+    #[allow(dead_code)]
     pub id: String,
     pub display_text: String,
     pub item_type: TreeItemType,
+    #[allow(dead_code)]
     pub level: usize,
 }
 

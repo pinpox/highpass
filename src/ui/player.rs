@@ -101,13 +101,6 @@ use log::{info, warn, error, debug};
 
 // SimpleMpv is already defined above and exported via the module
 
-#[derive(Debug, Clone)]
-pub enum PlayerMessage {
-    Previous,
-    PlayPause,
-    Next,
-    Seek(f32),
-}
 
 pub struct PlayerState {
     pub current_song: Option<Song>,
@@ -255,28 +248,6 @@ impl PlayerState {
         }
     }
 
-    pub fn stop(&mut self) {
-        if let Some(mpv) = &self.mpv {
-            let _ = mpv.command("stop", &[""]);
-            self.is_playing = false;
-            self.progress = 0.0;
-        }
-    }
-
-    pub fn seek(&mut self, position: f32) {
-        if let Some(mpv) = &self.mpv {
-            let _ = mpv.command("seek", &[&position.to_string(), "absolute"]);
-            self.progress = position;
-        }
-    }
-
-    pub fn set_progress(&mut self, progress: f32) {
-        self.progress = progress;
-    }
-
-    pub fn set_duration(&mut self, duration: f32) {
-        self.duration = duration;
-    }
 
     pub fn update_progress(&mut self) {
         if let Some(mpv) = &self.mpv {
